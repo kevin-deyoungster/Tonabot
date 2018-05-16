@@ -19,7 +19,12 @@ def get_size(string):
     if m:
         return m[0]
     else:
-        return None
+        term_gig = r"([0-9]+){1,3}\s?gig"
+        n = re.findall(term_gig,string.lower())
+        if n: 
+            return n[0]
+        else:
+            return None
 
 tonaton = "https://tonaton.com"
 tonaton_url = "https://tonaton.com/en/ads/ghana/electronics?"
@@ -45,7 +50,7 @@ def inspect_iphone(url):
     
     size = get_size(descr)
 
-    # Get the size from the string 
+    # Get the size from the string 9       Used              kob    Accra        None  GH₵ 1,000  None                Apple iPhone 7 Plus (Used)  /en/ad/apple-iphone-7-plus-used-for-sale-accra...
 
     condition = html.select('.item-properties dd')[0].text
     if html.select('.clearfix') is None:
@@ -74,7 +79,7 @@ def confirm(text, rubric):
 
 def get_ad_details(content):
     title = content.select('.item-title')[0].text
-    if confirm(title, ' 8 '):        
+    if confirm(title, ' 7 '):        
         url = content.select('.item-title')[0]['href']
         area = content.select('.item-area')[0].text
         price = content.select('.item-info')[0].text
@@ -97,7 +102,7 @@ def search_page(term, page_no):
             descr, condition, number, vendor,size = inspect_iphone(tonaton + item['url'])
             extras = {'description': descr, 'condition' : condition, 'number' : number, 'dealer' : vendor,'size' : str(size)}
             item = {**item, **extras}
-            del item['url']
+            # del item['url']
             del item['description']
             # print(item['title'] + ' - ' + item['price'] + ' - ' + item['condition'] + ' - ' + str(item['dealer']) + ' - ' + item["number"])
             ads_dict.append(item)
@@ -119,7 +124,9 @@ def search(term, target_no):
 # get_size("Brand new iPhone 8 Plus 256gb")
 # print(get_size("iPhone  8 plus 256 GB factory  unlocked")
 
-search("iphone 8 plus", 10)
+search("iphone 7 plus", 2)
 
 
 
+#TODO
+# The size part some people use 'gig' instead
