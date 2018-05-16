@@ -3,6 +3,7 @@ from requests.exceptions import RequestException
 from contextlib import closing
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode 
+import re 
 
 def is_good_response(resp):
     content_type = resp.headers['Content-Type'].lower()
@@ -11,6 +12,14 @@ def is_good_response(resp):
             and content_type.find('html') > -1)
 def log_error(e):
     print(e)
+
+def get_size(string):
+    term = r"([0-9]+){1,3}\s?gb"
+    m = re.findall(term,string.lower())
+    if m:
+        return m[0]
+    else:
+        return None
 
 tonaton = "https://tonaton.com"
 tonaton_url = "https://tonaton.com/en/ads/ghana/electronics?"
@@ -33,6 +42,11 @@ def get_page(url):
 def inspect_iphone(url):
     html = BeautifulSoup(get_page(url), 'html.parser')
     descr = html.select('.item-description')[0].text
+    
+    size = get_size(descr)
+
+    # Get the size from the string 
+
     condition = html.select('.item-properties dd')[0].text
     if html.select('.clearfix') is None:
         number = 'None' 
@@ -50,7 +64,7 @@ def inspect_iphone(url):
             vendor =  html.select('.poster')[0].text.split("by")[1]
         else:
             vendor = html.select('.poster a')[0].text
-    return descr, condition, number, vendor
+    return descr, condition, number, vendor, size
 
 def confirm(text, rubric):
     if rubric.lower() in text.lower():
@@ -80,8 +94,8 @@ def search_page(term, page_no):
     for content in ads:
         item = get_ad_details(content)
         if(item):
-            descr, condition, number, vendor = inspect_iphone(tonaton + item['url'])
-            extras = {'description': descr, 'condition' : condition, 'number' : number, 'dealer' : vendor}
+            descr, condition, number, vendor,size = inspect_iphone(tonaton + item['url'])
+            extras = {'description': descr, 'condition' : condition, 'number' : number, 'dealer' : vendor,'size' : str(size)}
             item = {**item, **extras}
             del item['url']
             del item['description']
@@ -99,6 +113,11 @@ def search(term, target_no):
     stuff = pd.DataFrame(result)
     print(stuff.to_string())
     
+
+
+
+# get_size("Brand new iPhone 8 Plus 256gb")
+# print(get_size("iPhone  8 plus 256 GB factory  unlocked")
 
 search("iphone 8 plus", 10)
 
