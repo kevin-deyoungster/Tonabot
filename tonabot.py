@@ -69,7 +69,9 @@ def inspect_iphone(url):
             vendor =  html.select('.poster')[0].text.split("by")[1]
         else:
             vendor = html.select('.poster a')[0].text
-    return descr, condition, number, vendor, size
+
+    date = html.select('.date')[0].text
+    return descr, condition, number, vendor, size, date
 
 def confirm(text, rubric):
     if rubric.lower() in text.lower():
@@ -99,8 +101,8 @@ def search_page(term, page_no):
     for content in ads:
         item = get_ad_details(content)
         if(item):
-            descr, condition, number, vendor,size = inspect_iphone(tonaton + item['url'])
-            extras = {'description': descr, 'condition' : condition, 'number' : number, 'dealer' : vendor,'size' : str(size)}
+            descr, condition, number, vendor,size,date = inspect_iphone(tonaton + item['url'])
+            extras = {'description': descr, 'condition' : condition, 'number' : number, 'dealer' : vendor,'size' : str(size), 'date':date }
             item = {**item, **extras}
             # del item['url']
             del item['description']
