@@ -81,7 +81,7 @@ def confirm(text, rubric):
 
 def get_ad_details(content):
     title = content.select('.item-title')[0].text
-    if confirm(title, ' 7 '):        
+    if confirm(title, 's9'):        
         url = content.select('.item-title')[0]['href']
         area = content.select('.item-area')[0].text
         price = content.select('.item-info')[0].text
@@ -104,7 +104,7 @@ def search_page(term, page_no):
             descr, condition, number, vendor,size,date = inspect_iphone(tonaton + item['url'])
             extras = {'description': descr, 'condition' : condition, 'number' : number, 'dealer' : vendor,'size' : str(size), 'date':date }
             item = {**item, **extras}
-            # del item['url']
+            del item['url']
             del item['description']
             # print(item['title'] + ' - ' + item['price'] + ' - ' + item['condition'] + ' - ' + str(item['dealer']) + ' - ' + item["number"])
             ads_dict.append(item)
@@ -126,7 +126,7 @@ def search(term, target_no):
 # get_size("Brand new iPhone 8 Plus 256gb")
 # print(get_size("iPhone  8 plus 256 GB factory  unlocked")
 
-search("iphone 7 plus", 2)
+search("samsung s7", 10)
 
 
 
