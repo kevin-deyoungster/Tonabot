@@ -1,134 +1,73 @@
 from requests import get
-from requests.exceptions import RequestException
-from contextlib import closing
 from bs4 import BeautifulSoup
-from urllib.parse import urlencode 
-import re 
+from pprint import pprint
+from datetime import datetime
+import threading
 
-def is_good_response(resp):
-    content_type = resp.headers['Content-Type'].lower()
-    return (resp.status_code == 200 
-            and content_type is not None 
-            and content_type.find('html') > -1)
-def log_error(e):
-    print(e)
+TONATON_URL = "https://tonaton.com/en/ads/ghana/electronics"
+TONATON_SEARCH_URL = "https://tonaton.com/en/ads/ghana/electronics?query="
+TONATON_BASE = "https://tonaton.com"
 
-def get_size(string):
-    term = r"([0-9]+){1,3}\s?gb"
-    m = re.findall(term,string.lower())
-    if m:
-        return m[0]
+LAST_CHECKED = datetime.strptime("9 Aug 8:00 pm", "%d %b %I:%M %p")
+
+response = get(TONATON_URL)
+html = BeautifulSoup(response.content, 'html.parser')
+
+
+def get_html_soup(link):
+    response = get(link)
+    html = BeautifulSoup(response.content, 'html.parser')
+    return html
+
+
+def get_extra_dets(item_url):
+    html = get_html_soup(item_url)
+    date = html.select(".date")[0].text
+    return date
+
+
+def search_for(item):
+    item_search_url = TONATON_SEARCH_URL + item
+    html = get_html_soup(item_search_url)
+
+    result_list = html.find("div", {"class": "serp-items"})
+
+    ads = result_list.select(".ui-item")
+    ad_dict = []
+    for ad in ads:
+        ad_title = ad.select(".item-title")[0].text
+        ad_price = ad.select(".item-info")[0].text
+        ad_url = TONATON_BASE + ad.select(".item-title")[0]["href"]
+        ad_date = get_extra_dets(ad_url)
+        proper_date = datetime.strptime(ad_date, "%d %b %I:%M %p")
+
+        if proper_date > LAST_CHECKED:
+            ad_dict.append(
+                {"name": ad_title, "price": ad_price, "date": ad_date, "proper_date": proper_date})
+
+    return ad_dict
+
+
+from win10toast import ToastNotifier
+
+
+def show_notifications(heading, text, seconds):
+    toaster = ToastNotifier()
+    toaster.show_toast(heading, text, duration=3)
+
+
+def run():
+    threading.Timer(120.0, run).start()
+    ads = search_for("iphone 8")
+    LAST_CHECKED = datetime.now().strftime("%d %b %I:%M %p")
+    # Save last checked to a file
+
+    if len(ads) == 0:
+        show_notifications("Tonabot!", "No ads found", 2)
     else:
-        term_gig = r"([0-9]+){1,3}\s?gig"
-        n = re.findall(term_gig,string.lower())
-        if n: 
-            return n[0]
-        else:
-            return None
-
-tonaton = "https://tonaton.com"
-tonaton_url = "https://tonaton.com/en/ads/ghana/electronics?"
-
-def create_search_url(term,page_no):
-    params = {'query': term, 'page' : page_no}
-    return tonaton_url + urlencode(params)
-
-def get_page(url):
-    try:
-        with closing(get(url, stream=True)) as resp:
-            if is_good_response(resp):
-                return resp.content
-            else:
-                return None
-    except RequestException as e:
-        log_error('Error during requests to {0} : {1}'.format(url, str(e)))
-        return None
-
-def inspect_iphone(url):
-    html = BeautifulSoup(get_page(url), 'html.parser')
-    descr = html.select('.item-description')[0].text
-    
-    size = get_size(descr)
-
-    # Get the size from the string 9       Used              kob    Accra        None  GH₵ 1,000  None                Apple iPhone 7 Plus (Used)  /en/ad/apple-iphone-7-plus-used-for-sale-accra...
-
-    condition = html.select('.item-properties dd')[0].text
-    if html.select('.clearfix') is None:
-        number = 'None' 
-    else:
-        if len(html.select('.clearfix')) == 0:
-            number = 'None'
-        else:
-            number = html.select('.clearfix')[0].text
-
-    # print(html.select('.poster a'))
-    if html.select('.poster a') is None:
-        vendor =  html.select('.poster')[0].text.split("by")[1]
-    else:
-        if len(html.select('.poster a')) == 0:
-            vendor =  html.select('.poster')[0].text.split("by")[1]
-        else:
-            vendor = html.select('.poster a')[0].text
-
-    date = html.select('.date')[0].text
-    return descr, condition, number, vendor, size, date
-
-def confirm(text, rubric):
-    if rubric.lower() in text.lower():
-        return True
-    else:
-        return False
-
-def get_ad_details(content):
-    title = content.select('.item-title')[0].text
-    if confirm(title, 's9'):        
-        url = content.select('.item-title')[0]['href']
-        area = content.select('.item-area')[0].text
-        price = content.select('.item-info')[0].text
-        item = {'title' : title, 'location': area, 'price': price, 'url': url}
-        return item
-    else:
-        return None
+        for ad in ads:
+            information = ad["price"] + "\n" + ad["name"]
+            show_notifications("Tonabot!", information, 3)
 
 
-import pandas as pd
-
-def search_page(term, page_no):
-    search_url = create_search_url(term, page_no)    
-    html = BeautifulSoup(get_page(search_url), 'html.parser')
-    ads = html.select(".item-content")
-    ads_dict = []
-    for content in ads:
-        item = get_ad_details(content)
-        if(item):
-            descr, condition, number, vendor,size,date = inspect_iphone(tonaton + item['url'])
-            extras = {'description': descr, 'condition' : condition, 'number' : number, 'dealer' : vendor,'size' : str(size), 'date':date }
-            item = {**item, **extras}
-            del item['url']
-            del item['description']
-            # print(item['title'] + ' - ' + item['price'] + ' - ' + item['condition'] + ' - ' + str(item['dealer']) + ' - ' + item["number"])
-            ads_dict.append(item)
-    return ads_dict
-
-# print(inspect_iphone("https://tonaton.com/en/ad/apple-iphone-8-plus-256gb-new-for-sale-accra-25"))
-def search(term, target_no):
-    result = []
-    for i in range(1, target_no):
-        # print("Page {}".format(i))
-        result = result + search_page(term, i)
-
-    stuff = pd.DataFrame(result)
-    print(stuff.to_string())
-    
-
-
-
-# get_size("Brand new iPhone 8 Plus 256gb")
-# print(get_size("iPhone  8 plus 256 GB factory  unlocked")
-
-search("samsung s7", 10)
-
-
-
-#TODO
-# The size part some people use 'gig' instead
+run()
