@@ -4,9 +4,13 @@ from pprint import pprint
 from datetime import datetime
 import threading
 
+from win10toast import ToastNotifier
+
+# Urls
+TONATON_BASE = "https://tonaton.com"
 TONATON_URL = "https://tonaton.com/en/ads/ghana/electronics"
 TONATON_SEARCH_URL = "https://tonaton.com/en/ads/ghana/electronics?query="
-TONATON_BASE = "https://tonaton.com"
+
 
 LAST_CHECKED = datetime.strptime("9 Aug 8:00 pm", "%d %b %I:%M %p")
 
@@ -15,18 +19,28 @@ html = BeautifulSoup(response.content, 'html.parser')
 
 
 def get_html_soup(link):
+    '''
+    Accesses url and returns beautifulsoup of the pafe
+    '''
     response = get(link)
     html = BeautifulSoup(response.content, 'html.parser')
     return html
 
 
 def get_extra_dets(item_url):
+    '''
+    This goes futher into an ads page and extracts extra info
+    Currently extracts only date
+    '''
     html = get_html_soup(item_url)
     date = html.select(".date")[0].text
     return date
 
 
 def search_for(item):
+    '''
+    Main code to handle searching for [item]
+    '''
     item_search_url = TONATON_SEARCH_URL + item
     html = get_html_soup(item_search_url)
 
@@ -48,19 +62,21 @@ def search_for(item):
     return ad_dict
 
 
-from win10toast import ToastNotifier
-
-
 def show_notifications(heading, text, seconds):
+    '''
+    This function shows notifications for windows 10
+    '''
     toaster = ToastNotifier()
     toaster.show_toast(heading, text, duration=3)
 
 
-def run():
-    threading.Timer(120.0, run).start()
-    ads = search_for("iphone 8")
+def run(searchTerm, interval):
+    '''
+    Entry point of the program
+    '''
+    threading.Timer(interval, run).start()
+    ads = search_for(searchTerm)
     LAST_CHECKED = datetime.now().strftime("%d %b %I:%M %p")
-    # Save last checked to a file
 
     if len(ads) == 0:
         show_notifications("Tonabot!", "No ads found", 2)
@@ -70,4 +86,4 @@ def run():
             show_notifications("Tonabot!", information, 3)
 
 
-run()
+run("iphone 8", 120.0)
