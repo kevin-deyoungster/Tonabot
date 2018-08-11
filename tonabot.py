@@ -4,7 +4,11 @@ from pprint import pprint
 from datetime import datetime
 import threading
 
-from win10toast import ToastNotifier
+import sys
+import subprocess
+
+if sys.platform == 'win32':
+    from win10toast import ToastNotifier
 
 # Urls
 TONATON_BASE = "https://tonaton.com"
@@ -66,8 +70,12 @@ def show_notifications(heading, text, seconds):
     '''
     This function shows notifications for windows 10
     '''
-    toaster = ToastNotifier()
-    toaster.show_toast(heading, text, duration=3)
+    if sys.platform.lower() == 'linux':
+        subprocess.call(['notify-send', heading, text, '-t', '3'])
+
+    elif sys.platform.lower() == 'win32':
+        toaster = ToastNotifier()
+        toaster.show_toast(heading, text, duration=3)
 
 
 def run(searchTerm, interval):
