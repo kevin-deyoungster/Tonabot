@@ -68,12 +68,16 @@ def search_for(item):
 
 def show_notifications(heading, text, seconds):
     '''
-    This function shows notifications for windows 10
+    This function shows a desktop notification
     '''
-    if sys.platform.lower() == 'linux':
+    if sys.platform.lower() == 'linux': # Linux Ubuntu
         subprocess.call(['notify-send', heading, text, '-t', '3'])
 
-    elif sys.platform.lower() == 'win32':
+    if sys.platform.lower() == 'darwin': # MacOS Mavericks +
+        subprocess.call(['osascript', '-e', 
+                         'display notification "{0}" with title "{1}"'.format(text, heading)])
+
+    elif sys.platform.lower() == 'win32': # Windows
         toaster = ToastNotifier()
         toaster.show_toast(heading, text, duration=3)
 
