@@ -1,101 +1,45 @@
-from requests import get
-from bs4 import BeautifulSoup
-from pprint import pprint
-from datetime import datetime
 import threading
+from datetime import datetime
+from notify_lib import show_notification
+from scraper_lib import search_for
 
-import sys
-import subprocess
-
-if sys.platform == 'win32':
-    from win10toast import ToastNotifier
-
-# Urls
-TONATON_BASE = "https://tonaton.com"
-TONATON_URL = "https://tonaton.com/en/ads/ghana/electronics"
-TONATON_SEARCH_URL = "https://tonaton.com/en/ads/ghana/electronics?query="
+# Set the last checked stamp to 1970....
+LAST_CHECKED = datetime.strptime("1 Jan 12:00 am", "%d %b %I:%M %p")
+WAIT_TIME_SECONDS = 50
+WAIT_TIME_BETWEEN_NOTIFICATIONS = 20
 
 
-LAST_CHECKED = datetime.strptime("9 Aug 8:00 pm", "%d %b %I:%M %p")
+def run(product_name, interval, filter_name=None):
+    """
+    Entry Point of Tonabot: Runs the scraping function to get new ads for a product every set interval (seconds)
 
-response = get(TONATON_URL)
-html = BeautifulSoup(response.content, 'html.parser')
+    Parameters:
+    product_name (str): The product to search for
+    interval (int): The number of seconds to wait before checking again
+    filter_name (str): Get only ads with this in their titles
+    """
+    global LAST_CHECKED
 
+    threading.Timer(interval, run, [product_name, interval]).start()
 
-def get_html_soup(link):
-    '''
-    Accesses url and returns beautifulsoup of the pafe
-    '''
-    response = get(link)
-    html = BeautifulSoup(response.content, 'html.parser')
-    return html
-
-
-def get_extra_dets(item_url):
-    '''
-    This goes futher into an ads page and extracts extra info
-    Currently extracts only date
-    '''
-    html = get_html_soup(item_url)
-    date = html.select(".date")[0].text
-    return date
-
-
-def search_for(item):
-    '''
-    Main code to handle searching for [item]
-    '''
-    item_search_url = TONATON_SEARCH_URL + item
-    html = get_html_soup(item_search_url)
-
-    result_list = html.find("div", {"class": "serp-items"})
-
-    ads = result_list.select(".ui-item")
-    ad_dict = []
-    for ad in ads:
-        ad_title = ad.select(".item-title")[0].text
-        ad_price = ad.select(".item-info")[0].text
-        ad_url = TONATON_BASE + ad.select(".item-title")[0]["href"]
-        ad_date = get_extra_dets(ad_url)
-        proper_date = datetime.strptime(ad_date, "%d %b %I:%M %p")
-
-        if proper_date > LAST_CHECKED:
-            ad_dict.append(
-                {"name": ad_title, "price": ad_price, "date": ad_date, "proper_date": proper_date})
-
-    return ad_dict
-
-
-def show_notifications(heading, text, seconds):
-    '''
-    This function shows a desktop notification
-    '''
-    if sys.platform.lower() == 'linux': # Linux Ubuntu
-        subprocess.call(['notify-send', heading, text, '-t', '3'])
-
-    if sys.platform.lower() == 'darwin': # MacOS Mavericks +
-        subprocess.call(['osascript', '-e', 
-                         'display notification "{0}" with title "{1}"'.format(text, heading)])
-
-    elif sys.platform.lower() == 'win32': # Windows
-        toaster = ToastNotifier()
-        toaster.show_toast(heading, text, duration=3)
-
-
-def run(searchTerm, interval):
-    '''
-    Entry point of the program
-    '''
-    threading.Timer(interval, run).start()
-    ads = search_for(searchTerm)
-    LAST_CHECKED = datetime.now().strftime("%d %b %I:%M %p")
+    ads = []
+    try:
+        ads = search_for(product_name, LAST_CHECKED, filter_name)
+    except AttributeError as error:
+        print(f"Error: Could not extract ads from page \n {error}")
 
     if len(ads) == 0:
-        show_notifications("Tonabot!", "No ads found", 2)
+        print("No ads found")
     else:
+        print(f"{len(ads)} ads found")
         for ad in ads:
+            print(f"{ad['name']} - {ad['price']}")
             information = ad["price"] + "\n" + ad["name"]
-            show_notifications("Tonabot!", information, 3)
+            show_notification("Tonabot!", information, WAIT_TIME_BETWEEN_NOTIFICATIONS)
+
+    # Update last checked to prevent duplicate notifications
+    LAST_CHECKED = datetime.now()
 
 
-run("iphone 8", 120.0)
+if __name__ == "__main__":
+    run("iphone 8", WAIT_TIME_SECONDS, "iphone")
