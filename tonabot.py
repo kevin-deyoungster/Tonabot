@@ -1,7 +1,7 @@
 import threading
 from datetime import datetime
-from notify_lib import show_notification
-from scraper_lib import search_for
+from lib.notify import show_notification
+from lib.scrape import search_for
 
 # Set the last checked stamp to 1970....
 LAST_CHECKED = datetime.strptime("1 Jan 12:00 am", "%d %b %I:%M %p")
