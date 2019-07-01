@@ -5,12 +5,12 @@ Tonabot is a scraper-bot to automatically search for specific ads on Tonaton (lo
 Run  `pip3 -r requirements.txt` to install dependencies
 
 ### Usage 
-Run `python3 tonabot.py`
+Run `python3 tonabot.py [product name]`
 
 ### Screenshots 
-![Screen](https://lh3.googleusercontent.com/jLJEAUq1gUJPOtyg2mh6xhBmJq8Bqm5Q6hV3M336f1PRnjADmC0VpWdJurIf4fJED49Fk1Rk_L43Ke7SW-rQF2T8kMF79WDjultg)
+![Screen](https://lh3.googleusercontent.com/Rc_sC__LPkoqAi5GZkbEnhWzx_209hAKQHqrLzSxrZA8Et45iAuu9KHS8cUvUoCDhqgSVwELKeIp6N-__mvh-gYmqLQ4OkuNQxcg)
 
-![Notifcations](https://lh3.googleusercontent.com/ClY2PugW4MZkEycy0uUOYytIKvyquWgPNa4oc8ZbU2WGV5H1z9yjk5QqMX-TCoIGxHX3ptl5YOHTAwg6AsKuZXd5J5rRLlHyUwjK)
+![Notifcations](https://lh3.googleusercontent.com/ImFSeV2Yw9aNewWoOQ9aoPun9O7hmlnvWS9dQoRSnxVlxb0bnDOaYIbnFhRiDl6nie8W3X0_xt66pDG4bGISrjg12VfRipzrVQUe)
 
 ### References
 [Windows 10 Notifications](https://github.com/jithurjacob/Windows-10-Toast-Notifications)  

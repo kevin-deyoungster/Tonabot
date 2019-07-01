@@ -50,7 +50,7 @@ def get_ads_for(product_name, last_checked, title_filter=None):
     """
     ad_results = []
 
-    print(f"Checking for new ads for [ {product_name} ]")
+    print(f"Checking for new ads for [{product_name}] filter:[{title_filter}]")
     product_search_url = TONATON_SEARCH_URL + product_name
     html_soup = get_html_soup(product_search_url)
 
