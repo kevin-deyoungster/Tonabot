@@ -1,5 +1,6 @@
 import sys
 import time
+import argparse
 import threading
 from datetime import datetime
 from modules.notify import show_notification
@@ -45,10 +46,23 @@ def run(product_name, interval, filter_name=None):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        search_term = sys.argv[1]
-        filter = sys.argv[2] if len(sys.argv) > 2 else None
-        run(search_term, WAIT_TIME_BETWEEN_CHECKS, filter)
-    else:
-        print("Invalid Parameters")
-        print("tonabot.py [search_term] [filter]")
+    parser = argparse.ArgumentParser(description="Search for ads on Tonaton")
+    parser.add_argument(
+        "product_name",
+        metavar="product_name",
+        type=str,
+        help="the name of the product to look for",
+    )
+    parser.add_argument(
+        "-f", "--filter", action="store", help="string to filter ads based on titles"
+    )
+    args = parser.parse_args()
+    product_name = args.product_name
+
+    if product_name:
+        if len(sys.argv) > 1:
+            filter = args.filter
+            run(product_name, WAIT_TIME_BETWEEN_CHECKS, filter)
+        else:
+            print("Invalid Parameters")
+            print("tonabot.py [search_term] [filter]")

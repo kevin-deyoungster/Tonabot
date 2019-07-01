@@ -1,7 +1,7 @@
 """
 This module handles scraping information off the tonaton website
 """
-
+import re
 from requests import get
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -77,7 +77,7 @@ def get_ads_for(product_name, last_checked, title_filter=None):
             }
 
             if title_filter:
-                if title_filter in ad_title.lower():
+                if re.search(title_filter, ad_title.lower()):
                     ad_results.append(ad_object)
             else:
                 ad_results.append(ad_object)
