@@ -10,7 +10,7 @@ def show_notification(heading, text, seconds):
     This function shows a desktop notification
     """
     if sys.platform.lower() == "linux":  # Linux Ubuntu
-        subprocess.call(["notify-send", heading, text, "-t", f"{seconds}"])
+        subprocess.call(["notify-send", heading, text])
 
     if sys.platform.lower() == "darwin":  # MacOS Mavericks +
         subprocess.call(

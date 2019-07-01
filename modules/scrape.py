@@ -38,7 +38,7 @@ def get_extra_dets(item_url):
     return {"date": date}
 
 
-def search_for(product_name, last_checked, title_filter=None):
+def get_ads_for(product_name, last_checked, title_filter=None):
     """
     Scrapes ads for a product from the search results 
 
