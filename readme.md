@@ -9,7 +9,7 @@ Run `python3 tonabot.py [product name]`
 
 ### Screenshots 
 ![Screen](https://lh3.googleusercontent.com/Rc_sC__LPkoqAi5GZkbEnhWzx_209hAKQHqrLzSxrZA8Et45iAuu9KHS8cUvUoCDhqgSVwELKeIp6N-__mvh-gYmqLQ4OkuNQxcg)
-
+****
 ![Notifcations](https://lh3.googleusercontent.com/ImFSeV2Yw9aNewWoOQ9aoPun9O7hmlnvWS9dQoRSnxVlxb0bnDOaYIbnFhRiDl6nie8W3X0_xt66pDG4bGISrjg12VfRipzrVQUe)
 
 ### References
